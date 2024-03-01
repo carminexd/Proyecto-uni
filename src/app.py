@@ -6,7 +6,7 @@ app=Flask(__name__)
 def index():
     correo = request.form['email']
     password = request.form['password']
-    return render_template('index.html',correo=correo,password=password)
+    return render_template('datos.html',correo=correo,password=password)
 
 @app.route('/saludo/<name>')
 def saludo(name):
@@ -29,6 +29,11 @@ def habilidades():
 def datos():
   return render_template("pagina1.html")
 
-    
-
+@app.route("/contacto")
+def contacto():
+   return render_template("usuario.html")
+ 
+@app.route("/inicio")
+def inicio():
+   return render_template("login.html") 
 app.run(debug=True)
