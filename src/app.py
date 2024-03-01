@@ -21,6 +21,14 @@ def login():
     
     return render_template('login.html')
    
+@app.route("/habilidades")
+def habilidades():
+  return render_template("index.html")
+
+@app.route("/datos")
+def datos():
+  return render_template("pagina1.html")
+
     
 
 app.run(debug=True)
