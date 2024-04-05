@@ -35,9 +35,16 @@ def login():
 def index():
     return render_template('index.html')
 
+@app.route("/register")
+def register():
+    return render_template('register.html')
+
+
 @app.route("/tasks")
 def tasks ():
     return redirect(url_for("layout.html"))
+
+
 
 @app.route("/no_valido")
 def no_valido ():
