@@ -1,4 +1,5 @@
 from flask import Flask,render_template,request,redirect,url_for,session
+from datetime import datetime
 import config
 from flask_mysqldb import MySQL
 
@@ -14,6 +15,14 @@ mysql= MySQL(app)
 def home():
     return render_template('login.html')
 
+@app.route('/inicio')
+def inicio():
+    return render_template('inicio.html')
+
+@app.route('/armas')
+def armas():
+    return render_template('tasks.html')
+
 @app.route('/login',methods= ["POST"])
 def login():
     email= request.form["email"]
@@ -25,29 +34,54 @@ def login():
     if user is not None:
         session['email'] = email
         session['name'] = user[1]
-        session['surnames'] = user[2]
 
-        return redirect(url_for('index'))
+        return redirect(url_for('tasks'))
     else:
         return render_template('login.html', message="Email o contraseña incorrectos")
-    
-@app.route("/index")
-def index():
-    return render_template('index.html')
 
-@app.route("/register")
-def register():
-    return render_template('register.html')
-
-
-@app.route("/tasks")
+@app.route("/tasks",methods=['GET'])
 def tasks ():
-    return redirect(url_for("layout.html"))
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM tasks")
+    tasks = cur.fetchall()
+    cur.close()
+    return render_template('tasks.html', tasks = tasks)
 
 
+@app.route('/add_task', methods=['POST'])
+def add_task():
+    if request.method == 'POST':
+       
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        cur = mysql.connection.cursor()
+        # Obtener la fecha y hora actual
+        fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cur.execute("INSERT INTO tasks (nombre, descripcion,email,fecha) VALUES (%s, %s, %s, %s)", (nombre, descripcion,session['email'],fecha_actual))
+        mysql.connection.commit()
+        cur.close()
+        return redirect(url_for('tasks'))
+    
+@app.route('/edit_task/<int:id>', methods=['POST'])
+def edit_task(id):
+    cur = mysql.connection.cursor()
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        descripcion = request.form['descripcion']
+        cur.execute("UPDATE tasks SET nombre = %s, descripcion = %s WHERE id = %s", (nombre, descripcion, id))
+        mysql.connection.commit()
+        cur.close()
+        return redirect(url_for('tasks'))
 
-@app.route("/no_valido")
-def no_valido ():
-    return "usuario no valido"
+@app.route('/delete_task', methods=['POST'])
+def delete_task():
+    cur = mysql.connection.cursor()
+    id = request.form['task_id']
+    print("Valor de id:", id)
+    cur.execute("DELETE FROM tasks WHERE id = %s", (id))
+    mysql.connection.commit()
+    cur.close()
+    return redirect(url_for('tasks'))
+
 if __name__ =='__main__':
     app.run(debug=True)
