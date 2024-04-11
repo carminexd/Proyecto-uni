@@ -13,7 +13,7 @@ app.config['SECRET_KEY'] = config.HEX_SEC_KEY
 mysql= MySQL(app)
 @app.route('/')
 def home():
-    return render_template('login.html')
+    return render_template('home.html')
 
 @app.route('/inicio')
 def inicio():
@@ -55,9 +55,10 @@ def add_task():
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
         cur = mysql.connection.cursor()
+        link=request.form['link']
         # Obtener la fecha y hora actual
         fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cur.execute("INSERT INTO tasks (nombre, descripcion,email,fecha) VALUES (%s, %s, %s, %s)", (nombre, descripcion,session['email'],fecha_actual))
+        cur.execute("INSERT INTO tasks (nombre, descripcion,link,fecha) VALUES (%s, %s, %s, %s)", (nombre, descripcion, link,fecha_actual))
         mysql.connection.commit()
         cur.close()
         return redirect(url_for('tasks'))
@@ -68,7 +69,8 @@ def edit_task(id):
     if request.method == 'POST':
         nombre = request.form['nombre']
         descripcion = request.form['descripcion']
-        cur.execute("UPDATE tasks SET nombre = %s, descripcion = %s WHERE id = %s", (nombre, descripcion, id))
+        link=request.form['link']
+        cur.execute("UPDATE tasks SET nombre = %s, descripcion = %s WHERE id = %s", (nombre, descripcion, id, link))
         mysql.connection.commit()
         cur.close()
         return redirect(url_for('tasks'))
@@ -82,6 +84,34 @@ def delete_task():
     mysql.connection.commit()
     cur.close()
     return redirect(url_for('tasks'))
+
+nombre = "Cristian Jesús Balam Ciime"
+edad = "19 Años"
+email = "cristian.balam.cime@gmail.com"
+ubi = "Progreso, Yucatán, México"
+
+
+@app.route("/personal")
+def personal():
+  return render_template("personal.html", nombre=nombre, edad=edad, email=email, ubi=ubi)
+
+@app.route("/habilidades")
+def habilidades():
+  return render_template("habilidades.html")
+
+@app.route("/contacto", methods=["GET", "POST"])
+def contacto():
+  if request.method == "GET":
+    return render_template("contacto.html")
+  else:
+    name = request.form["name"]
+    email = request.form["email"]
+    message = request.form["message"]
+    # Procesar la información del formulario
+    return render_template("contacto.html", success=True, name=name, email=email, message=message)
+  
+
+
 
 if __name__ =='__main__':
     app.run(debug=True)
